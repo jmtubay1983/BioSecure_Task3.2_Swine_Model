@@ -78,7 +78,12 @@ other observation granularities and the full expensive study configuration are
 not reproduced. The notebook explicitly labels this limit. Increasing run sizes
 alone does not resolve the mathematical discrepancies below.
 
-## Mathematical rule-set discrepancies: preserve for later review
+## Mathematical rule-set discrepancies recorded at the PR #2 baseline
+
+The table below records baseline commit `544ec0f`. On the separate follow-up
+branch, destination expansion and additive preservation are corrected; see
+[transition-weight fixes](transition-weight-fixes.md). The remaining ratio and
+aggregation discrepancies are unchanged.
 
 Let I_i count agents in state I within partition i, N_i be its total count, and
 q_i = I_i/N_i for nonempty partitions. Let tau_f be a normalized schedule weight

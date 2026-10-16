@@ -258,7 +258,7 @@ class Metapopulation(MetapopProcessManager):
                         # All movements to fattening become a movement to all fattening pens
                         if dest == 4:
                             for i in range(5, 16):
-                                herds[dest].statevars.trans_btwn_pens_frm_movement += trans_I_from_source
+                                herds[i].statevars.trans_btwn_pens_frm_movement += trans_I_from_source
         
         # print trans rate between groups
         #for i in range(self.model.parameters.nb_herds):
