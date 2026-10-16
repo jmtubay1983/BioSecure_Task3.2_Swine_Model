@@ -76,12 +76,10 @@ class TransitionWeightTest(unittest.TestCase):
         partitions[5] = Partition(size=6, selected=3, weight=7)
         process = manager(partitions)
         Metapopulation.sample_I_from_fatteners(process)
-        # Existing pooled normalization is deliberately preserved:
-        # focal 4: 7 + 2*3/(6 + 10*8); focal 5: 7 + 2*2/(4 + 10*8).
-        self.assertAlmostEqual(partitions[4].statevars.trans_btwn_pens_frm_movement, 7 + 6/86)
-        self.assertAlmostEqual(partitions[5].statevars.trans_btwn_pens_frm_movement, 7 + 4/84)
-        # Any other pen sees both selected counts, excluding its own size.
-        self.assertAlmostEqual(partitions[6].statevars.trans_btwn_pens_frm_movement, 7 + 10/82)
+        # Equation 5 adds per-source ratios, preserving the schedule term.
+        self.assertAlmostEqual(partitions[4].statevars.trans_btwn_pens_frm_movement, 7 + 2*3/6)
+        self.assertAlmostEqual(partitions[5].statevars.trans_btwn_pens_frm_movement, 7 + 2*2/4)
+        self.assertAlmostEqual(partitions[6].statevars.trans_btwn_pens_frm_movement, 7 + 2*(2/4 + 3/6))
         self.assertEqual(partitions[4].statevars.nb_of_sampled_I_Jf, 2)
         for index in (0, 1, 2, 3, 16, 17):
             self.assertEqual(partitions[index].statevars.trans_btwn_pens_frm_movement, 7)

@@ -122,9 +122,11 @@ outputs, life-stage herd assignments and population totals, exercise the
 inference adapter outside the checkout, check valid repeated simulations and exact caller
 random-state preservation, and reject invalid observation files and trajectory
 shapes. The complete notebook execution above additionally exercises ABC-SMC,
-SQLite storage, and posterior plots. These are software checks, not validation of the mathematical rule sets or
-an exact reproduction of the article. Known equation/code differences are
-documented for a separate review; transition-weight formulas are preserved here.
+SQLite storage, and posterior plots. Hand-calculated numerical tests also check
+the neighbour and auxiliary aggregation rules against equations 5 and 6; see
+the [reference-rule follow-up](docs/reference-rule-fixes.md) for the explicit area
+mapping, preserved connectivity variants, and remaining review limits. Passing
+these checks does not establish exact reproduction of the article's outputs.
 
 ## Troubleshooting
 
@@ -142,6 +144,8 @@ python -c "import movement_12fatpens_outrans"
 The full traceback identifies the underlying error. EMULSION 1.2rc5 can report
 the same message for a missing dependency inside the add-on, such as `betapert`.
 Install the pinned requirements into the environment running EMULSION.
+Both add-ons also import the repository's `transition_weights.py`; keep that
+file alongside the add-ons when sharing or copying this version.
 
 If the traceback reports `NameError: name 'herds' is not defined` at module scope,
 check whether you are using an older copy of `movement_12fatpens_outrans.py`.
@@ -161,6 +165,7 @@ relative to the adapter, rather than requiring a renamed YAML file.
 - `data/modified_movements_10yr.csv`: supplied schedule input; not generated state-count observations.
 - `parameter_estimation_notebook.ipynb`: executable synthetic-data ABC-SMC example.
 - `swine_inference.py`: tested simulation adapter, observation loader, and distance.
+- `transition_weights.py`: validated partition ratios and the explicit area map.
 - `tests/`: regression and inference tests.
 - `requirements.txt`, `requirements-lock.txt`: direct and resolved dependencies.
 

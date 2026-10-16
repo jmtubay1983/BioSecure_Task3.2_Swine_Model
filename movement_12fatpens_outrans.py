@@ -13,6 +13,7 @@ from   emulsion.tools.debug        import debuginfo
 from   emulsion.model.exceptions   import SemanticException
 from   emulsion.tools.functions    import random_normal, random_gamma
 from   betapert                    import pert, mpert
+from transition_weights import PEN_INDICES, sum_state_ratios
 
 #===============================================================
 # Preprocessor class for restructuring farmer movement data
@@ -275,26 +276,14 @@ class Metapopulation(MetapopProcessManager):
         # Count a fattener herd as infectious if at least one pig is infected
         herds[4].statevars.nb_of_sampled_I_Jf += sum(1 for i in range(12) if herds[i + 4].total_I > 0)
 
-        # Infect neighboring pens depending on the number of infected animals in the pen
-        # Pen configuration is 4, 6, 8, 10, 12, 14, 16 together in a line (in this order)
-        # 5, 7, 9, 11, 13, 15 together in a line (in this order)
-        trans_between_pens = 0
-        for i in range(4, 16):
-            if i == 4:
-                trans_between_pens += self.model.parameters.neighboring_herd_trans * herds[i + 2].total_I / herds[i + 2].total_herd
-                herds[i].statevars.trans_btwn_pens_frm_movement += trans_between_pens
-            elif i == 5:
-                trans_between_pens += self.model.parameters.neighboring_herd_trans * herds[i + 2].total_I / herds[i + 2].total_herd
-                herds[i].statevars.trans_btwn_pens_frm_movement += trans_between_pens
-            elif i == 14:
-                trans_between_pens += self.model.parameters.neighboring_herd_trans * herds[i - 2].total_I / herds[i - 2].total_herd
-                herds[i].statevars.trans_btwn_pens_frm_movement += trans_between_pens
-            elif i == 15:
-                trans_between_pens += self.model.parameters.neighboring_herd_trans * herds[i - 2].total_I / herds[i - 2].total_herd
-                herds[i].statevars.trans_btwn_pens_frm_movement += trans_between_pens
-            else:
-                trans_between_pens += self.model.parameters.neighboring_herd_trans * (herds[i - 2].total_I + herds[i + 2].total_I) / (herds[i - 2].total_herd + herds[i + 2].total_herd)
-                herds[i].statevars.trans_btwn_pens_frm_movement += trans_between_pens
+        # Equation 5: independent source-ratio sum for each focal partition.
+        # Preserve the two rows (4, 6, ..., 14) and (5, 7, ..., 15).
+        for i in PEN_INDICES:
+            neighbours = [j for j in (i - 2, i + 2) if j in PEN_INDICES]
+            herds[i].statevars.trans_btwn_pens_frm_movement += (
+                self.model.parameters.neighboring_herd_trans
+                * sum_state_ratios(herds, neighbours)
+            )
 
     ## DISEASE TRANSMISSION FROM OUTSIDE THE FARM
     def external_pathway(self):

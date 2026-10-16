@@ -83,7 +83,15 @@ alone does not resolve the mathematical discrepancies below.
 The table below records baseline commit `544ec0f`. On the separate follow-up
 branch, destination expansion and additive preservation are corrected; see
 [transition-weight fixes](transition-weight-fixes.md). The remaining ratio and
-aggregation discrepancies are unchanged.
+aggregation discrepancies are recorded here as historical findings.
+
+See the [remaining issue #3 review](issue-3-rule-review.md) for executed
+counterexamples, boundary findings, and the specification decisions required
+before changing those rules.
+
+The separate [reference-rule follow-up](reference-rule-fixes.md) implements
+source-specific ratio sums, independent focal accumulators, and an explicit
+composite-area map. It records the remaining reference-confirmation limits.
 
 Let I_i count agents in state I within partition i, N_i be its total count, and
 q_i = I_i/N_i for nonempty partitions. Let tau_f be a normalized schedule weight

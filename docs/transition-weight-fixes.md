@@ -50,15 +50,17 @@ The initial hosted notebook check reached the sampling cell but exceeded its
 75 minutes for the whole job, including installation and tests. The documented
 noninteractive command uses the same per-cell limit. These are finite execution
 limits; notebook settings and numerical rules are unchanged by this CI adjustment.
-The increased limits still require verification on the hosted runner.
+The hosted check at revision `c5374c0` subsequently passed all steps, including
+every notebook cell: <https://github.com/jmtubay1983/BioSecure_Task3.2_Swine_Model/actions/runs/38951472286>.
 
 ## Remaining review in issue #3
 
-The pooled-versus-sum-of-ratios choice, default running neighbour accumulator,
-and auxiliary aggregation/connectivity are unchanged. They require a separate
-review against equations 5 and 6. The unchanged pooled expression used in a
-focused test is intentional: it isolates additive composition rather than
-silently changing the normalization at the same time.
+At the PR #4 baseline, the pooled-versus-sum-of-ratios choice, default running
+neighbour accumulator, and auxiliary aggregation/connectivity were unchanged.
+The focused test used the existing pooled expression to isolate additive
+composition. The separate [reference-rule follow-up](reference-rule-fixes.md)
+addresses those remaining calculations and updates that test's expected ratio
+sum. It preserves the original variant-specific connectivity.
 
 Computed outputs can change because the old implementation lost or misplaced
 weights. EMULSION's object-identity-dependent agent ordering also prevents exact

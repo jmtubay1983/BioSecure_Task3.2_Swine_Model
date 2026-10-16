@@ -13,6 +13,7 @@ from   emulsion.tools.debug        import debuginfo
 from   emulsion.model.exceptions   import SemanticException
 from   emulsion.tools.functions    import random_normal, random_gamma
 from   betapert                    import pert, mpert
+from transition_weights import AREA_PARTITIONS, PEN_INDICES, pooled_state_ratio, sum_state_ratios
 
 #===============================================================
 # Preprocessor class for restructuring the file of trade movements
@@ -289,41 +290,25 @@ class Metapopulation(MetapopProcessManager):
         # Counts a fattener herd if it is infectious; infectious if at least one pig is infected
         herds[4].statevars.nb_of_sampled_I_Jf += sum(1 for i in range(12) if herds[i + 4].total_I > 0)
            
-        # infect neigboring pens depending on the number of infected animals in the pen 
-        # any pair of pens can infect each other since swine flu can be transmitted via aerosol
-        trans_between_pens = 0
-        for i in range(4, 16):
-            total_I = 0
-            total_herd = 0
-            portion_I = 0
-            for j in range(4, 16):
-                if j != i:
-                    total_I += herds[j].total_I
-                    total_herd += herds[j].total_herd
-            if total_herd != 0:
-                portion_I = total_I / total_herd
-            herds[i].statevars.trans_btwn_pens_frm_movement += self.model.parameters.neighboring_herd_trans * portion_I
-            #print(herds[i].statevars.trans_btwn_pens_frm_movement)
+        # Equation 5: preserve this variant's complete graph, excluding self.
+        for i in PEN_INDICES:
+            herds[i].statevars.trans_btwn_pens_frm_movement += (
+                self.model.parameters.neighboring_herd_trans
+                * sum_state_ratios(herds, (j for j in PEN_INDICES if j != i))
+            )
     
     # Third pathway of infection among areas in the farm
     def third_trans_pathway(self):
         herds = self.get_populations()
-	# Each farm can be infected by any other areas in the farm depending on the number of infection in an area
-        for i in range(5):
-            total_I = 0
-            total_herd = 0
-            portion_I = 0
-            for j in range(5):
-                if i != j:
-                    total_I += herds[j].total_I
-                    total_herd = herds[j].total_herd
-                    if total_herd != 0:
-                        portion_I = total_I / total_herd 
-            if i == 4:
-                for i in range(4,16):
-                    herds[i].statevars.trans_frm_3rd_path = self.model.parameters.third_path_trans * portion_I
-            else:
-                herds[i].statevars.trans_frm_3rd_path = self.model.parameters.third_path_trans * portion_I
+        # Equation 6 is an area-level sum. Pool counts within each area first;
+        # exclude the whole focal area, then write its weight to every member.
+        ratios = [pooled_state_ratio(herds, members) for members in AREA_PARTITIONS]
+        for area, members in enumerate(AREA_PARTITIONS):
+            contribution = self.model.parameters.third_path_trans * sum(
+                ratio for other, ratio in enumerate(ratios) if other != area
+            )
+            for index in members:
+                herds[index].statevars.trans_frm_3rd_path = contribution
 
     # external pathway of disease
     def external_pathway(self):
