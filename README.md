@@ -49,6 +49,36 @@ emulsion run --plot swine_model_weekly-12fatpens-FINAL.yaml
 
 Follow this link for more information and options: [Getting Started with EMULSION](https://sourcesup.renater.fr/www/emulsion-public/pages/Getting_started.html)
 
+### Troubleshooting Python add-ons
+
+Run EMULSION from the repository directory. Its `--code-path` defaults to the
+current working directory, rather than the directory containing the YAML file.
+If running elsewhere, set `--code-path` to this repository and `--input-dir` to
+its `data` directory.
+
+If EMULSION reports `module not found for level metapop`, use the same Python
+environment as EMULSION and run this from the repository directory:
+
+```bash
+python -c "import movement_12fatpens_outrans"
+```
+
+The traceback identifies the underlying import error. EMULSION 1.2rc5 can also
+show this message for a missing dependency inside the add-on. For example, if
+the traceback names `betapert`, install it with `python -m pip install betapert`.
+
+### Checking the default model
+
+After installing the prerequisites, run the regression check:
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+This runs two short simulations and checks that they finish, animal counts are
+consistent, and life stages remain in their assigned herds. It does not validate
+the scientific assumptions or the parameter-estimation notebook.
+
 ### Running the parameter estimation
 To implement the parameter estimation framework, please open the `parameter_estimation_notebook.ipynb` notebook in Jupyter. Within the notebook, you can modify the values pertinent to the parameter estimation process. While this can be executed on a personal computer, utilizing a cluster for enhanced performance and efficiency is advisable.
 
