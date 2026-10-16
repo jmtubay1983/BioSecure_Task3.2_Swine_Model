@@ -1,4 +1,4 @@
-# Reference-rule aggregation fixes
+# Reference-rule aggregation and empty-state fixes
 
 This follow-up builds on PR #4 at `c5374c0` and addresses the remaining
 aggregation items in issue #3. PR #2's branch is unchanged. The equations in
@@ -9,8 +9,9 @@ the published article are the reference and are not edited:
 
 Let `I[j]` be a selected-state count and `N[j]` a partition size. For each
 nonempty partition, `q[j] = I[j]/N[j]`. A valid empty partition has `I=N=0`
-and contributes zero. Negative, nonfinite, or inconsistent counts (`I>N`)
-raise `ValueError` rather than generating an invalid numerical weight.
+and contributes zero. The neighbour/auxiliary ratio helpers reject negative,
+nonfinite, or inconsistent counts (`I>N`) with `ValueError` rather than
+generating an invalid numerical weight.
 
 Equation 5 is evaluated separately for each focal partition:
 
@@ -46,6 +47,23 @@ be retrieved because the publisher hosts were blocked in this environment.
 Supplementary confirmation of this explicit mapping remains outstanding; this
 change does not claim complete equivalence with the original study code.
 
+## Local and schedule boundary fixes
+
+The two YAML local expressions now use
+`transmission_rate * DIV(total_I, total_herd)`, using EMULSION's existing
+zero-safe division function. For nonempty valid partitions this is exactly
+equation 4. For an empty partition it returns zero instead of raising
+`ZeroDivisionError`. The regression test loads each actual YAML through
+`EmulsionModel` and evaluates the compiled expression for empty and nonempty
+counts; it does not substitute a separately written numerical formula.
+
+Schedule source 4 represents the whole composite area. Both add-ons now
+evaluate its pooled state ratio even when partition 4 itself is empty, rather
+than skipping a nonempty area based on that one member's size. The existing
+area-level ratio and normalized schedule weight are preserved. Tests place the
+same counts in members 4, 5, or 15 and require the same contribution, and verify
+that an entirely empty area contributes zero.
+
 ## Hand-calculated checks
 
 | Case | Baseline behaviour | Revised result |
@@ -56,11 +74,14 @@ change does not claim complete equivalence with the original study code.
 | Only one composite member has count 1, all member sizes 8, beta=2 | Members 5–15 are ignored as sources. | Each other area receives `2/96`; the composite area receives zero from itself. |
 | All sources empty | Default neighbour method divides by zero. | Zero additional contribution; prior schedule weight is preserved. |
 
-Nine new tests exercise actual process methods, including unequal and equal
+Nine aggregation tests exercise actual process methods, including unequal and equal
 source sizes, independent focal accumulators, connectivity, empty sources,
 invalid counts, every composite-area member, source-area permutations, member
 permutations, and a graph-preserving swap of the two default rows. They exposed
 30 failing assertions/subcases and four division-by-zero errors before repair.
+Two additional boundary tests exposed four schedule subcase failures and two
+compiled-YAML division-by-zero errors before their corresponding fixes. The
+complete suite contains 21 tests.
 The existing additive-composition test now uses equation 5's source-specific
 ratios rather than asserting the old pooled expression.
 
@@ -79,8 +100,9 @@ execution and structural invariants, not recovery of the published results.
 
 Saved observations must be reused explicitly for any later estimation
 comparison. The notebook still generates new synthetic observations by default;
-it does not reuse the original study's unavailable sequences. Parameter priors,
-generation budgets, and YAML transition rules are unchanged in this follow-up.
+it does not reuse the original study's unavailable sequences. Parameter priors
+and generation budgets are unchanged. The YAML local expression changes only
+its valid empty-partition behaviour; its nonempty formula is preserved.
 
 ## Why issue #3 remains open
 
@@ -88,10 +110,6 @@ The formula defects covered here are implemented and tested, but supplementary
 confirmation of the area mapping and independent model evaluation remain.
 No issue-closing keyword should be used in this PR.
 
-The neighbour empty-source convention does not define every empty-state case
-in the whole engine: the YAML local `I/N` expression remains unchanged. Also,
-the schedule-source guard still tests partition 4's size before aggregating
-the composite area; a state with partition 4 empty and another composite member
-nonempty needs a separate schedule boundary check. This follow-up is scoped to
-the neighbour and auxiliary rules rather than asserting all model rules are
-validated.
+The local and schedule empty-state checks described above are now covered by
+this same follow-up. Passing them does not establish complete validation of
+every state transition or recovery of the original published sequences.

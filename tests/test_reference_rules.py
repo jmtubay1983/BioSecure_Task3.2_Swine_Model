@@ -1,6 +1,10 @@
 """Small, hand-calculated examples for article equations 5 and 6."""
 
 import unittest
+from pathlib import Path
+from types import SimpleNamespace
+
+from emulsion.model.emulsion_model import EmulsionModel
 
 from movement_12fatpens_outrans import Metapopulation as Default
 from movement_12fatpens_swIAVs import Metapopulation as Weighted
@@ -19,6 +23,21 @@ def auxiliary(partitions):
 
 
 class ReferenceRulesTest(unittest.TestCase):
+    def test_compiled_yaml_local_rule_handles_empty_and_nonempty_partitions(self):
+        root = Path(__file__).resolve().parents[1]
+        for filename in ('swine_model_weekly-12fatpens-FINAL.yaml',
+                         'swine_model_weekly-12fatpens-weight-FINAL-swIAVs.yaml'):
+            model = EmulsionModel(str(root / filename),
+                                  changed_values={'transmission_rate': 2.0})
+            rule = model.get_value('force_of_infection_int')
+            for selected, size, expected in [(0, 0, 0), (0, 8, 0),
+                                              (2, 8, 0.5), (8, 8, 2)]:
+                with self.subTest(filename=filename, selected=selected, size=size):
+                    values = {'total_I': selected, 'total_herd': size,
+                              'transmission_rate': 2.0}
+                    partition = SimpleNamespace(get_information=values.__getitem__)
+                    self.assertAlmostEqual(rule(partition), expected)
+
     def test_neighbour_rules_sum_ratios_for_unequal_and_equal_sizes(self):
         for model in (Default, Weighted):
             for sizes, selected, expected in [((4, 12), (1, 6), 8.5),

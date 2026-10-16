@@ -123,7 +123,8 @@ inference adapter outside the checkout, check valid repeated simulations and exa
 random-state preservation, and reject invalid observation files and trajectory
 shapes. The complete notebook execution above additionally exercises ABC-SMC,
 SQLite storage, and posterior plots. Hand-calculated numerical tests also check
-the neighbour and auxiliary aggregation rules against equations 5 and 6; see
+the neighbour and auxiliary aggregation rules against equations 5 and 6,
+composite schedule sources, and empty/nonempty local-rule evaluation; see
 the [reference-rule follow-up](docs/reference-rule-fixes.md) for the explicit area
 mapping, preserved connectivity variants, and remaining review limits. Passing
 these checks does not establish exact reproduction of the article's outputs.

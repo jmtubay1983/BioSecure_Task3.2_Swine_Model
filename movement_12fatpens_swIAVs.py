@@ -220,7 +220,7 @@ class Metapopulation(MetapopProcessManager):
                         bp_trans = random_gamma(shape_bp_trans, scale_bp_trans)
                         
                         # force of infection from movement of farmers from one pen to another
-                        if herds[source].total_herd > 0 and dest != 16 and dest != 17: # dressing rooms excluded
+                        if (source == 4 or herds[source].total_herd > 0) and dest != 16 and dest != 17: # dressing rooms excluded
                             # check if movement must be made if source is infected
                             # rand = 1
                             #if herds[source].total_I > 0:
@@ -252,13 +252,10 @@ class Metapopulation(MetapopProcessManager):
                             if source != 4:  
                                 trans_I_from_source = dur * self.model.parameters.between_herd_trans * herds[source].total_I / herds[source].total_herd
                             else: # all movements from fattening becomes movement from all fattening pens
-                                total_I = 0
-                                total_herd = 0
-                                for i in range (4,16):
-                                    total_I += herds[i].total_I
-                                    total_herd += herds[i].total_herd
-                                total_herd = 1 if total_herd == 0 else total_herd
-                                trans_I_from_source = dur * self.model.parameters.between_herd_trans * total_I / total_herd
+                                trans_I_from_source = (
+                                    dur * self.model.parameters.between_herd_trans
+                                    * pooled_state_ratio(herds, PEN_INDICES)
+                                )
                         else:
                             trans_I_from_source = 0
                         # transmission rate between groups accumulates per movement to destination

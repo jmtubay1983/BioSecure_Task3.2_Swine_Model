@@ -41,6 +41,26 @@ def manager(partitions, moves=None, neighbour_weight=2):
 
 
 class TransitionWeightTest(unittest.TestCase):
+    def test_schedule_source_uses_the_entire_composite_area_even_if_partition_4_is_empty(self):
+        for name, method in [
+            ("movement_12fatpens_outrans", "animal_farmer_movement"),
+            ("movement_12fatpens_swIAVs", "farmer_movement"),
+        ]:
+            for source_member in (None, 4, 5, 15):
+                with self.subTest(variant=name, source_member=source_member):
+                    module = importlib.import_module(name)
+                    partitions = [Partition(size=0, weight=99) for _ in range(18)]
+                    if source_member is not None:
+                        partitions[source_member] = Partition(size=8, selected=2)
+                    moves = {1: {4: [[3, 10080]]}}
+                    with patch.object(module, "random_gamma", return_value=1):
+                        getattr(module.Metapopulation, method)(manager(partitions, moves))
+                    # One area ratio: 2/8 regardless of which member holds it.
+                    expected = 0 if source_member is None else 1
+                    self.assertAlmostEqual(
+                        partitions[3].statevars.trans_btwn_pens_frm_movement, expected
+                    )
+
     def test_schedule_weight_reaches_each_target_once_and_accumulates_entries(self):
         for name, method in [
             ("movement_12fatpens_outrans", "animal_farmer_movement"),

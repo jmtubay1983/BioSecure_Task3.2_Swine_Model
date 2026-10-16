@@ -13,7 +13,7 @@ from   emulsion.tools.debug        import debuginfo
 from   emulsion.model.exceptions   import SemanticException
 from   emulsion.tools.functions    import random_normal, random_gamma
 from   betapert                    import pert, mpert
-from transition_weights import PEN_INDICES, sum_state_ratios
+from transition_weights import PEN_INDICES, pooled_state_ratio, sum_state_ratios
 
 #===============================================================
 # Preprocessor class for restructuring farmer movement data
@@ -230,7 +230,7 @@ class Metapopulation(MetapopProcessManager):
                         bp_trans = random_gamma(shape_bp_trans, scale_bp_trans)
 
                         ## Force of infection from movement of farmers from one pen to another
-                        if herds[source].total_herd > 0 and dest != 16 and dest != 17:  # Dressing rooms excluded
+                        if (source == 4 or herds[source].total_herd > 0) and dest != 16 and dest != 17:  # Dressing rooms excluded
                             # Normalize duration between 0 and 1; divided by total number of minutes in a week
                             dur = dur / 10080
 
@@ -245,13 +245,10 @@ class Metapopulation(MetapopProcessManager):
                             if source != 4:  # For non-fattening groups
                                 trans_I_from_source = dur * self.model.parameters.between_herd_trans * herds[source].total_I / herds[source].total_herd
                             else:  # All movements from fattening become movement from all fattening pens
-                                total_I = 0
-                                total_herd = 0
-                                for i in range(4, 16):
-                                    total_I += herds[i].total_I
-                                    total_herd += herds[i].total_herd
-                                total_herd = 1 if total_herd == 0 else total_herd
-                                trans_I_from_source = dur * self.model.parameters.between_herd_trans * total_I / total_herd
+                                trans_I_from_source = (
+                                    dur * self.model.parameters.between_herd_trans
+                                    * pooled_state_ratio(herds, PEN_INDICES)
+                                )
                         else:
                             trans_I_from_source = 0
                         # Accumulate transmission rate between groups per movement to destination
