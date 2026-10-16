@@ -69,8 +69,10 @@ python -m jupyter lab
 Open `parameter_estimation_notebook.ipynb`, select the HogDSim kernel, and choose
 **Restart Kernel and Run All Cells**. The defaults run the swIAVs configuration
 for 8 weekly steps, then a small serial ABC-SMC example with four transition
-weights, 12 particles, and at most 2 populations. The validated default run took about 15 minutes in the cloud environment;
-runtime varies by machine. No Redis service or cluster
+weights, 12 particles, and at most 2 populations. A validated default run took about
+15 minutes in the cloud environment, but the sampling cell exceeded 20 minutes
+on a GitHub-hosted runner. Runtime varies with the machine and sampling workload.
+CI allows 60 minutes per cell and 75 minutes for the entire job. No Redis service or cluster
 is required.
 
 The notebook uses **explicitly labelled synthetic observations** by default.
@@ -102,7 +104,7 @@ For a noninteractive run of **all** notebook cells with the same defaults:
 
 ```bash
 python -m jupyter nbconvert --to notebook --execute \
-  --ExecutePreprocessor.timeout=1200 \
+  --ExecutePreprocessor.timeout=3600 \
   --output executed-estimation.ipynb --output-dir results \
   parameter_estimation_notebook.ipynb
 ```

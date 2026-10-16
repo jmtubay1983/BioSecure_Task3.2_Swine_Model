@@ -10,7 +10,8 @@ permissions:
 jobs:
   reproducibility:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # Allow setup and tests in addition to the notebook's per-cell budget.
+    timeout-minutes: 75
     env:
       MPLBACKEND: Agg
       PYTHONDONTWRITEBYTECODE: "1"
@@ -29,6 +30,6 @@ jobs:
         run: |
           mkdir -p results
           python -m jupyter nbconvert --to notebook --execute \
-            --ExecutePreprocessor.timeout=1200 \
+            --ExecutePreprocessor.timeout=3600 \
             --output executed-estimation.ipynb --output-dir results \
             parameter_estimation_notebook.ipynb

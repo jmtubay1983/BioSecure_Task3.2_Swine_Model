@@ -45,6 +45,13 @@ complete time/partition grids, nonnegative state counts, partition assignments,
 and state-total consistency. These execution checks are not proof of exact
 agreement with the published numerical sequences.
 
+The initial hosted notebook check reached the sampling cell but exceeded its
+1,200-second execution timeout. CI now allows 3,600 seconds per cell and
+75 minutes for the whole job, including installation and tests. The documented
+noninteractive command uses the same per-cell limit. These are finite execution
+limits; notebook settings and numerical rules are unchanged by this CI adjustment.
+The increased limits still require verification on the hosted runner.
+
 ## Remaining review in issue #3
 
 The pooled-versus-sum-of-ratios choice, default running neighbour accumulator,
