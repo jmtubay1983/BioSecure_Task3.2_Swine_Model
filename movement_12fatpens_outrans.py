@@ -23,7 +23,7 @@ class FarmerMovementsReader(EmulsionPreprocessor):
     """
 
     def init_preprocessor(self):
-        """Check if a valid 'farmer_movement_file' is provided in the input files.
+        """Check if a valid 'trade_file' is provided in the input files.
         Raise an error if not present."""
         if self.input_files is None or 'trade_file' not in self.input_files:
             raise SemanticException("A valid 'trade_file' must be specified in the input_files section for pre-processing class {}".format(self.__class__.__name__))
@@ -33,10 +33,9 @@ class FarmerMovementsReader(EmulsionPreprocessor):
         
         Expected file format: CSV with the following fields:
         - date: the date of the movement (in ISO format)
-        - source: ID of the source farm
-        - dest: ID of the destination farm
-        - age: age group of the animals being moved
-        - quantity: number of animals being moved
+        - source: ID of the source herd/area
+        - dest: ID of the destination herd/area
+        - duration: movement/contact duration in minutes
         """
         if 'moves' not in self.simulation.shared_data:
             debuginfo('Reading {}'.format(self.input_files.trade_file))
@@ -47,7 +46,7 @@ class FarmerMovementsReader(EmulsionPreprocessor):
     def restructure_moves(self):
         """Restructure the farmer movement CSV data into nested dictionaries.
 
-        The file contains columns: date, source farm, destination farm, age group, quantity.
+        The file contains columns: date, source, dest, duration (minutes).
 
         This method restructures the data into a dictionary format based on simulation steps:
         {
